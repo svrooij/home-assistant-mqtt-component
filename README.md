@@ -4,12 +4,9 @@ The default [MQTT](https://www.home-assistant.io/integrations/mqtt/) integration
 
 This is a fork of the original mqtt component with support for media players.
 
-[![HACS Custom][badge_integration]][link_integration-repo]
-[![Github stars][badge_integration-stars]][link_integration-repo]
-[![Github issues][badge_integration-issues]][link_integration-issues]
+[![HACS Custom][badge_integration]][link_integration-repo] [![Github stars][badge_integration-stars]][link_integration-repo] [![Github issues][badge_integration-issues]][link_integration-issues]
 
-[![Support me on Github][badge_sponsor]][link_sponsor]
-[![Follow on Twitter][badge_twitter]][link_twitter]
+[![Support me on Github][badge_sponsor]][link_sponsor] [![Follow on Twitter][badge_twitter]][link_twitter]
 
 ## Installation
 
@@ -19,7 +16,7 @@ This is a fork of the original mqtt component with support for media players.
 
 Custom repository details:
 
-- Repository: `https://github.com/svrooij/home-assistant-mqtt-component/`
+- Repository: `svrooij/home-assistant-mqtt-component/`
 - Category: `Integration`
 
 ## Works with
@@ -28,9 +25,7 @@ This modified integration and [Sonos2mqtt](#sonos2mqtt) are both build by [me](h
 
 ### Sonos2mqtt
 
-[![Sonos2mqtt][badge_sonos-mqtt]][link_sonos-mqtt]
-[![docker pulls][badge_sonos-mqtt-docker]][link_sonos-mqtt-docker]
-[![sonos2mqtt issues][badge_sonos-mqtt-issues]][link_sonos-mqtt-issues]
+[![Sonos2mqtt][badge_sonos-mqtt]][link_sonos-mqtt] [![docker pulls][badge_sonos-mqtt-docker]][link_sonos-mqtt-docker] [![sonos2mqtt issues][badge_sonos-mqtt-issues]][link_sonos-mqtt-issues]
 
 The latest beta version of Sonos2mqtt has support for sending mqtt discovery messages. And works perfectly in combination with this MQTT integration with media player support.
 
@@ -47,6 +42,10 @@ By utializing mqtt, and sending the correct messages from the media player you c
 The current [Sonos integration](https://www.home-assistant.io/integrations/sonos/) does not really support **Play this sound and revert back to original**. It only works 25% of the time, messing up the current playlist the rest of the time.
 
 This does not replace the sonos integration (but is can...), you can run both at the same time.
+
+## License
+
+I'm not sure about the license, for now I copied the [License](./License.md) from the the [Home Assistant Repository](https://github.com/home-assistant/core/blob/dev/LICENSE.md). Contact me if this is incorrect.
 
 [badge_integration]: https://img.shields.io/badge/HACS-Custom-41BDF5.svg?logo=Home+Assistant+Community+Store&style=for-the-badge
 [badge_integration-issues]: https://img.shields.io/github/issues/svrooij/home-assistant-mqtt-component?logo=github&style=for-the-badge
