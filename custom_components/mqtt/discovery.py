@@ -56,6 +56,7 @@ SUPPORTED_COMPONENTS = [
     "humidifier",
     "light",
     "lock",
+    "media_player",
     "number",
     "scene",
     "siren",
