@@ -68,6 +68,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 
 async def _async_has_devices(hass: HomeAssistant) -> bool:
     """Return if Sonos devices have been seen by mqtt."""
+    _LOGGER.debug("_async_has_devices is called")
     return True
 
 
@@ -86,14 +87,14 @@ class Sonos2MqttConfigFlow(DiscoveryFlowHandler, domain=DOMAIN):
         """Handle the initial step."""
         if self._async_current_entries():
             return self.async_abort(reason="single_instance_allowed")
-        if user_input is None:
-            return self.async_show_form(
-                step_id="user", data_schema=STEP_USER_DATA_SCHEMA
-            )
+        # if user_input is None:
+        #     return self.async_show_form(
+        #         step_id="user", data_schema=STEP_USER_DATA_SCHEMA
+        #     )
 
         # errors = {}
-
-        return self.async_create_entry(title="Instance", data=user_input)
+        return await self.async_step_confirm()
+        # return self.async_create_entry(title="Instance", data=user_input)
 
         # try:
         #     info = await validate_input(self.hass, user_input)
@@ -117,7 +118,8 @@ class Sonos2MqttConfigFlow(DiscoveryFlowHandler, domain=DOMAIN):
         if self._async_current_entries() or self._async_in_progress():
             return self.async_abort(reason="single_instance_allowed")
         await self.async_set_unique_id(DOMAIN)
-        return self.async_create_entry(title="Instance", data={})
+        return await self.async_step_confirm()
+        # return self.async_create_entry(title="Instance", data={})
 
 
 class CannotConnect(HomeAssistantError):
