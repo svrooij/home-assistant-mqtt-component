@@ -161,7 +161,8 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
 
         if ATTR_ENQUEUED_METADATA in data:
             meta = data[ATTR_ENQUEUED_METADATA]
-            self._attr_media_playlist = meta[ATTR_TITLE]
+            if ATTR_TITLE in meta:
+                self._attr_media_playlist = meta[ATTR_TITLE]
             if ATTR_UPNP_CLASS in meta and meta[ATTR_UPNP_CLASS].startswith(
                 "object.container.playlistContainer"
             ):
@@ -181,7 +182,7 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
                 data[ATTR_POSITION][ATTR_POSITION]
             )
             self._attr_media_position_updated_at = dt.datetime.fromtimestamp(
-                data[ATTR_POSITION][ATTR_POSITION_LAST_UPDATE]
+                data[ATTR_POSITION][ATTR_POSITION_LAST_UPDATE] / 1000
             )
 
         self.async_write_ha_state()
