@@ -34,8 +34,10 @@ from .const import (
     ATTR_POSITION,
     ATTR_POSITION_LAST_UPDATE,
     ATTR_TITLE,
+    ATTR_TRACK_ALBUM,
     ATTR_TRACK_ALBUM_ART_URI,
     ATTR_TRACK_ARTIST,
+    ATTR_TRACK_DURATION,
     ATTR_TRACK_URI,
     ATTR_TRANSPORTSTATE,
     ATTR_UPNP_CLASS,
@@ -82,11 +84,11 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
         self._attr_name = conn.name
         self._attr_unique_id = conn.identifier + "_speaker"
         self._attr_device_class = MediaPlayerDeviceClass.SPEAKER
-        self._attr_media_content_type = MediaClass.TRACK
+        self._attr_media_content_type = MediaClass.MUSIC
         self._attr_supported_features = DEFAULT_SPEAKER_FEATURES
 
         self._attr_device_info = conn.device_info
-        self._attr_available = False
+        self._attr_available = True
         self._attr_source_list = conn.source_list
 
     async def async_added_to_hass(self) -> None:
@@ -118,7 +120,14 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
 
         if ATTR_CURRENT_TRACK in data:
             track = data[ATTR_CURRENT_TRACK]
-            self._attr_media_title = track[ATTR_TITLE]
+            if ATTR_TITLE in track:
+                self._attr_media_title = track[ATTR_TITLE]
+
+            if ATTR_TRACK_ALBUM in track:
+                self._attr_media_album_name = track[ATTR_TRACK_ALBUM]
+            else:
+                self._attr_media_album_name = None
+
             if ATTR_TRACK_ALBUM_ART_URI in track:
                 image_url = track[ATTR_TRACK_ALBUM_ART_URI]
                 self._attr_media_image_url = image_url
@@ -142,6 +151,13 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
                 else:
                     self._attr_source = SOURCE_APP
 
+            if ATTR_TRACK_DURATION in track:
+                self._attr_media_duration = time_string_to_seconds(
+                    track[ATTR_TRACK_DURATION]
+                )
+            else:
+                self._attr_media_duration = None
+
         if ATTR_ENQUEUED_METADATA in data:
             meta = data[ATTR_ENQUEUED_METADATA]
             self._attr_media_playlist = meta[ATTR_TITLE]
@@ -163,9 +179,9 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
             self._attr_media_position = time_string_to_seconds(
                 data[ATTR_POSITION][ATTR_POSITION]
             )
-            self._attr_media_position_updated_at = data[ATTR_POSITION][
-                ATTR_POSITION_LAST_UPDATE
-            ]
+            self._attr_media_position_updated_at = seconds_to_time_string(
+                data[ATTR_POSITION][ATTR_POSITION_LAST_UPDATE]
+            )
 
         self.async_write_ha_state()
 
@@ -304,9 +320,7 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
 
             if media_id.startswith("media-source://radio_browser/"):
                 # Don't know how to play....
-                # await self._conn.send_command(
-                #     "setavtransporturi", "x-sonosapi-stream:" + info.url
-                # )
+                await self._conn.send_command("setavtransporturi", info.url)
                 # await self._conn.send_command(
                 #     "adv-command",
                 #     {

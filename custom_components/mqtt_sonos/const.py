@@ -29,6 +29,8 @@ ATTR_CROSSFADE = "crossfade"
 ATTR_CURRENT_TRACK = "currentTrack"
 ATTR_ENQUEUED_METADATA = "enqueuedMetadata"
 ATTR_MUTE = "mute"
+ATTR_QUEUE_LENGTH = "queueLength"
+ATTR_QUEUE_POSITION = "queuePosition"
 ATTR_TITLE = "title"
 ATTR_TRANSPORTSTATE = "transportState"
 ATTR_UPNP_CLASS = "upnpClass"
@@ -40,8 +42,10 @@ ATTR_POSITION_LAST_UPDATE = "lastUpdate"
 
 ATTR_CHANNEL_MASTER = "Master"
 
+ATTR_TRACK_ALBUM = "album"
 ATTR_TRACK_ALBUM_ART_URI = "albumArtUri"
 ATTR_TRACK_ARTIST = "artist"
+ATTR_TRACK_DURATION = "duration"
 ATTR_TRACK_URI = "trackUri"
 
 
@@ -90,7 +94,7 @@ MQTT_PAYLOAD = vol.Schema(
                 ),
                 vol.Optional(ATTR_CURRENT_TRACK): vol.Schema(
                     {
-                        vol.Required(ATTR_TITLE): cv.string,
+                        vol.Optional(ATTR_TITLE): cv.string,
                         vol.Optional(ATTR_TRACK_URI): cv.string,
                         vol.Optional(ATTR_TRACK_ARTIST): cv.string,
                         vol.Optional(ATTR_TRACK_ALBUM_ART_URI): cv.url,
@@ -100,7 +104,7 @@ MQTT_PAYLOAD = vol.Schema(
                 ),
                 vol.Optional(ATTR_ENQUEUED_METADATA): vol.Schema(
                     {
-                        vol.Required(ATTR_TITLE): cv.string,
+                        vol.Optional(ATTR_TITLE): cv.string,
                         vol.Optional(ATTR_UPNP_CLASS): cv.string,
                     },
                     extra=vol.ALLOW_EXTRA,
