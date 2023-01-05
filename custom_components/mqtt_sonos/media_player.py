@@ -182,7 +182,7 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
                 data[ATTR_POSITION][ATTR_POSITION]
             )
             self._attr_media_position_updated_at = dt.datetime.fromtimestamp(
-                data[ATTR_POSITION][ATTR_POSITION_LAST_UPDATE] / 1000
+                data[ATTR_POSITION][ATTR_POSITION_LAST_UPDATE] / 1000, dt.timezone.utc
             )
 
         self.async_write_ha_state()
