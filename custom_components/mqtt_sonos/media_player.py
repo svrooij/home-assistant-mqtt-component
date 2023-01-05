@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import time
+import datetime as dt
 from typing import Any
 
 import voluptuous as vol
@@ -179,7 +180,7 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
             self._attr_media_position = time_string_to_seconds(
                 data[ATTR_POSITION][ATTR_POSITION]
             )
-            self._attr_media_position_updated_at = seconds_to_time_string(
+            self._attr_media_position_updated_at = dt.datetime.fromtimestamp(
                 data[ATTR_POSITION][ATTR_POSITION_LAST_UPDATE]
             )
 
