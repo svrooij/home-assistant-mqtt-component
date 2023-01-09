@@ -43,7 +43,7 @@ class SonosManager:
         _LOGGER.debug("async_start_discovery called")
 
         @callback
-        async def discovery_received(msg: ReceiveMessage):
+        def discovery_received(msg: ReceiveMessage):
             """MQTT message callback."""
             try:
                 data = DISCOVERY_PAYLOAD(msg.payload)
@@ -64,8 +64,9 @@ class SonosManager:
                 self.connections[uuid] = MqttMediaConnection(
                     self.hass, self._config_entry, data
                 )
+            # await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-            await self.hass.config_entries.async_forward_entry_setup(
+            self.hass.config_entries.async_forward_entry_setup(
                 self._config_entry, PLATFORMS
             )
 
