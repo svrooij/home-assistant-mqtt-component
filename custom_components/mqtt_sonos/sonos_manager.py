@@ -64,10 +64,5 @@ class SonosManager:
                 self.connections[uuid] = MqttMediaConnection(
                     self.hass, self._config_entry, data
                 )
-            # await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-
-            self.hass.config_entries.async_forward_entry_setup(
-                self._config_entry, PLATFORMS
-            )
 
         await mqtt.async_subscribe(self.hass, DISCOVERY_TOPIC, discovery_received)

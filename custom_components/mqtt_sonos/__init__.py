@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import asyncio
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -27,7 +28,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # The initiated manager is added to hass, to be used in the actual entities
     hass.data[DOMAIN][entry.entry_id] = manager
 
-    # await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    # Wait until discovery completed, please help with this...
+    await asyncio.sleep(1)
+
+    # Call forward entry for home assistant to try to initialize the speakers.
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
 
