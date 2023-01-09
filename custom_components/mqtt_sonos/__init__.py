@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import logging
 
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
@@ -28,7 +27,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # The initiated manager is added to hass, to be used in the actual entities
     hass.data[DOMAIN][entry.entry_id] = manager
 
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    # await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
 

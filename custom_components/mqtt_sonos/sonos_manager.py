@@ -9,9 +9,12 @@ from homeassistant.components import mqtt
 from homeassistant.components.mqtt.models import ReceiveMessage
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.const import Platform
 
 from .const import ATTR_UNIQUE_ID, DISCOVERY_PAYLOAD
 from .mqtt_media_connection import MqttMediaConnection
+
+PLATFORMS: list[Platform] = [Platform.MEDIA_PLAYER]  # Platform.SWITCH
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,7 +43,7 @@ class SonosManager:
         _LOGGER.debug("async_start_discovery called")
 
         @callback
-        def discovery_received(msg: ReceiveMessage):
+        async def discovery_received(msg: ReceiveMessage):
             """MQTT message callback."""
             try:
                 data = DISCOVERY_PAYLOAD(msg.payload)
@@ -61,5 +64,9 @@ class SonosManager:
                 self.connections[uuid] = MqttMediaConnection(
                     self.hass, self._config_entry, data
                 )
+
+            await self.hass.config_entries.async_forward_entry_setup(
+                self._config_entry, PLATFORMS
+            )
 
         await mqtt.async_subscribe(self.hass, DISCOVERY_TOPIC, discovery_received)

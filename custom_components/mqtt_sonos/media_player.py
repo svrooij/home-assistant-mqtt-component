@@ -1,9 +1,9 @@
 """MQTT Media player entity."""
 from __future__ import annotations
 
+import datetime as dt
 import logging
 import time
-import datetime as dt
 from typing import Any
 
 import voluptuous as vol
@@ -74,7 +74,7 @@ async def async_setup_entry(
     for _, conn in connections.items():
         entities.append(SonosMediaPlayerEntity(conn, hass))
 
-    _LOGGER.debug("Found %s speakers", entities.__len__)
+    _LOGGER.debug("Found %s speakers", entities.count)
     async_add_entries(entities, True)
 
 
