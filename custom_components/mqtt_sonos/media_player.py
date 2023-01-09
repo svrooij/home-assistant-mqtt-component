@@ -108,7 +108,11 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
             _LOGGER.debug("Got update from mqtt %s", data)
             self._handle_device_update(data)
 
+        _LOGGER.debug("async_added_to_hass called for %s", self._attr_unique_id)
         await mqtt.async_subscribe(self.hass, self._conn.state_topic, message_received)
+        if self._attr_available is False:
+            self._attr_available = True
+            self.async_write_ha_state()
 
     def _handle_device_update(self, data: MQTT_PAYLOAD) -> None:
         """Update data from mqtt message."""
@@ -296,7 +300,7 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
                 {
                     "trackUri": "https://cdn.smartersoft-group.com/various/pull-bell-short.mp3",
                     "timeout": 10,
-                    "volume": 20,
+                    "volume": 25,
                     "delayMs": 600,
                 },
             )
@@ -314,7 +318,7 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
                     {
                         "trackUri": media_uri,
                         "timeout": 30,
-                        "volume": 15,
+                        "volume": 20,
                         "delayMs": 600,
                     },
                 )
