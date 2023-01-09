@@ -65,20 +65,29 @@ async def async_setup_entry(
     async_add_entries: AddEntitiesCallback,
 ) -> None:
     """Configure all found entities as media_player."""
+
     _LOGGER.debug("async_setup_entry called")
     manager: SonosManager = hass.data[DOMAIN][config_entry.entry_id]
+
     connections = manager.get_connections()
     entities = []
     for _, conn in connections.items():
         entities.append(SonosMediaPlayerEntity(conn, hass))
+
+    _LOGGER.debug("Found %s speakers", entities.__len__)
     async_add_entries(entities, True)
 
 
 class SonosMediaPlayerEntity(MediaPlayerEntity):
     """Representation of a Sonos entity."""
 
+    _attr_assumed_state: True
+
     def __init__(self, conn: MqttMediaConnection, hass: HomeAssistant) -> None:
         """Initialize the media player entity."""
+
+        _LOGGER.debug("__init__ called %s connection", conn)
+
         self.hass = hass
         self._conn = conn
         self._attr_should_poll = False
@@ -95,6 +104,8 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
     async def async_added_to_hass(self) -> None:
         """Automatically called if entity is activated."""
 
+        _LOGGER.debug("async_added_to_hass called for %s", self._attr_unique_id)
+
         @callback
         def message_received(msg: ReceiveMessage) -> None:
             """Handle update from mqtt."""
@@ -105,10 +116,9 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
                     "Skipping update because of malformatted data: %s", error
                 )
                 return
-            _LOGGER.debug("Got update from mqtt %s", data)
+
             self._handle_device_update(data)
 
-        _LOGGER.debug("async_added_to_hass called for %s", self._attr_unique_id)
         await mqtt.async_subscribe(self.hass, self._conn.state_topic, message_received)
         if self._attr_available is False:
             self._attr_available = True
@@ -116,6 +126,9 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
 
     def _handle_device_update(self, data: MQTT_PAYLOAD) -> None:
         """Update data from mqtt message."""
+
+        _LOGGER.debug("Got update from mqtt %s %s", self._attr_unique_id, data)
+
         self._attr_available = True
         state = data[ATTR_TRANSPORTSTATE]
         if state in ("PAUSED_PLAYBACK", "STOPPED"):

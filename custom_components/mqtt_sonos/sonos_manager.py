@@ -22,18 +22,22 @@ class SonosManager:
     """Sonos manager to manage MQTT subscriptions."""
 
     _config_entry: ConfigEntry
+    hass: HomeAssistant
 
-    def __init__(self, config_entry: ConfigEntry) -> None:
+    def __init__(self, config_entry: ConfigEntry, hass: HomeAssistant) -> None:
         """Create sonos manager to do the discovery of entities."""
+        _LOGGER.debug("__init__ called")
         self._config_entry = config_entry
+        self.hass = hass
         self.connections: dict[str, MqttMediaConnection] = {}
 
     def get_connections(self) -> dict[str, MqttMediaConnection]:
         """Load all discovered speakers."""
         return self.connections
 
-    async def async_start_discovery(self, hass: HomeAssistant) -> None:
+    async def async_start_discovery(self) -> None:
         """Start sonos device discovery, call from __init__."""
+        _LOGGER.debug("async_start_discovery called")
 
         @callback
         def discovery_received(msg: ReceiveMessage):
@@ -48,10 +52,14 @@ class SonosManager:
             _LOGGER.debug("Got sonos discovery data %s", data)
             uuid = data[ATTR_UNIQUE_ID]
             if uuid in self.connections:
-                _LOGGER.debug("Skipping discovery update")
-            else:
+                _LOGGER.debug("Updating discovery info")
                 self.connections[uuid] = MqttMediaConnection(
-                    hass, self._config_entry, data
+                    self.hass, self._config_entry, data
                 )
 
-        await mqtt.async_subscribe(hass, DISCOVERY_TOPIC, discovery_received)
+            else:
+                self.connections[uuid] = MqttMediaConnection(
+                    self.hass, self._config_entry, data
+                )
+
+        await mqtt.async_subscribe(self.hass, DISCOVERY_TOPIC, discovery_received)
