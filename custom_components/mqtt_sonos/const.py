@@ -31,6 +31,8 @@ ATTR_ENQUEUED_METADATA = "enqueuedMetadata"
 ATTR_MUTE = "mute"
 ATTR_QUEUE_LENGTH = "queueLength"
 ATTR_QUEUE_POSITION = "queuePosition"
+ATTR_REPEAT = "repeat"
+ATTR_SHUFFLE = "shuffle"
 ATTR_TITLE = "title"
 ATTR_TRANSPORTSTATE = "transportState"
 ATTR_UPNP_CLASS = "upnpClass"
@@ -47,6 +49,10 @@ ATTR_TRACK_ALBUM_ART_URI = "albumArtUri"
 ATTR_TRACK_ARTIST = "artist"
 ATTR_TRACK_DURATION = "duration"
 ATTR_TRACK_URI = "trackUri"
+
+REPEAT_OFF = "Off"
+REPEAT_ALL = "RepeatAll"
+REPEAT_ONE = "RepeatOne"
 
 
 DISCOVERY_PAYLOAD = vol.Schema(
@@ -116,6 +122,8 @@ MQTT_PAYLOAD = vol.Schema(
                     }
                 ),
                 vol.Optional(ATTR_CROSSFADE): cv.string,
+                vol.Optional(ATTR_SHUFFLE): cv.boolean,
+                vol.Optional(ATTR_REPEAT): cv.string,
             },
             extra=vol.ALLOW_EXTRA,
         ),

@@ -34,6 +34,8 @@ from .const import (
     ATTR_MUTE,
     ATTR_POSITION,
     ATTR_POSITION_LAST_UPDATE,
+    ATTR_REPEAT,
+    ATTR_SHUFFLE,
     ATTR_TITLE,
     ATTR_TRACK_ALBUM,
     ATTR_TRACK_ALBUM_ART_URI,
@@ -46,6 +48,9 @@ from .const import (
     DEFAULT_SPEAKER_FEATURES,
     DOMAIN,
     MQTT_PAYLOAD,
+    REPEAT_ALL,
+    REPEAT_OFF,
+    REPEAT_ONE,
     SOURCE_APP,
     SOURCE_LINEIN,
     SOURCE_QUEUE,
@@ -194,6 +199,18 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
         if ATTR_MUTE in data:
             self._attr_is_volume_muted = data[ATTR_MUTE][ATTR_CHANNEL_MASTER]
 
+        if ATTR_SHUFFLE in data:
+            self._attr_shuffle = data[ATTR_SHUFFLE]
+
+        if ATTR_REPEAT in data:
+            repeat = data[ATTR_REPEAT]
+            if repeat == REPEAT_ALL:
+                self._attr_repeat = RepeatMode.ALL
+            elif repeat == REPEAT_ONE:
+                self._attr_repeat = RepeatMode.ONE
+            else:
+                self._attr_repeat = RepeatMode.OFF
+
         if ATTR_POSITION in data:
             self._attr_media_position = time_string_to_seconds(
                 data[ATTR_POSITION][ATTR_POSITION]
@@ -241,11 +258,11 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
     async def async_set_repeat(self, repeat: RepeatMode) -> None:
         """Send repeat mode to mqtt."""
         if repeat == RepeatMode.ALL:
-            await self._conn.send_command("repeat", True)
+            await self._conn.send_command("repeat", REPEAT_ALL)
+        elif repeat == RepeatMode.ONE:
+            await self._conn.send_command("repeat", REPEAT_ONE)
         elif repeat == RepeatMode.OFF:
-            await self._conn.send_command("repeat", False)
-        # how about 'one'?
-        # await self._conn.send_command("repeat", repeat)
+            await self._conn.send_command("repeat", REPEAT_OFF)
         self._attr_repeat = repeat
         self.async_write_ha_state()
 
