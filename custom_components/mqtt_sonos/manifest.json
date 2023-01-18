@@ -2,11 +2,19 @@
   "domain": "mqtt_sonos",
   "name": "Sonos2mqtt companion",
   "config_flow": true,
-  "documentation": "https://svrooij.io/sonos2mqtt",
-  "dependencies": ["media_player", "media_source", "mqtt"],
-  "codeowners": ["@svrooij"],
-  "mqtt": ["sonos2mqtt/discovery/#"],
+  "documentation": "https://github.com/svrooij/home-assistant-mqtt-component",
+  "dependencies": [
+    "media_player",
+    "media_source",
+    "mqtt"
+  ],
+  "codeowners": [
+    "@svrooij"
+  ],
+  "mqtt": [
+    "sonos2mqtt/discovery/#"
+  ],
   "iot_class": "local_push",
   "version": "0.0.1",
-  "issue_tracker":"https://github.com/svrooij/home-assistant-mqtt-component"
+  "issue_tracker": "https://github.com/svrooij/home-assistant-mqtt-component"
 }
