@@ -1,0 +1,12 @@
+# Example configuration.yaml entry
+default_config:
+
+logger:
+  default: info
+  logs:
+    custom_components.mqtt_sonos: debug
+
+# Run with debugpy and wait for debugger to connect
+# debugpy:
+#   start: true
+#   wait: true
