@@ -1,0 +1,49 @@
+set_sleep_timer:
+  name: Set sleep timer
+  description: Pause playback after set time.
+  target:
+    device:
+      integration: mqtt_sonos
+    entity:
+      integration: mqtt_sonos
+      platform: media_player
+  fields:
+    sleep_time:
+      name: Sleep Time
+      description: Number of seconds to set the timer.
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 7200
+          unit_of_measurement: seconds
+
+clear_sleep_timer:
+  name: Clear sleep timer
+  description: Cancel the sleep timer
+  target:
+    device:
+      integration: mqtt_sonos
+    entity:
+      integration: mqtt_sonos
+      platform: media_player
+
+snooze:
+  name: Snooze alarm
+  description: Snooze the currently running alarm for x seconds
+  target:
+    device:
+      integration: mqtt_sonos
+    entity:
+      integration: mqtt_sonos
+      platform: media_player
+  fields:
+    snooze_time:
+      name: Snooze time
+      description: Number of seconds to snooze.
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 1200
+          unit_of_measurement: seconds

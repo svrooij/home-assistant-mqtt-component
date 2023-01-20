@@ -26,7 +26,7 @@ from homeassistant.components.mqtt.models import ReceiveMessage
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback  # , ServiceCall
 
-# from homeassistant.helpers import config_validation as cv, entity_platform, service
+from homeassistant.helpers import config_validation as cv, entity_platform  # , service
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -61,7 +61,8 @@ from .const import (
     SOURCE_TV,
 )
 from .mqtt_media_connection import MqttMediaConnection
-from .sonos_manager import SonosManager
+
+# from .sonos_manager import SonosManager
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -81,7 +82,7 @@ async def async_setup_entry(
 ) -> None:
     """Configure all found entities as media_player."""
 
-    # platform = entity_platform.async_get_current_platform()
+    platform = entity_platform.async_get_current_platform()
 
     _LOGGER.debug("async_setup_entry called")
     # manager: SonosManager = hass.data[DOMAIN][config_entry.entry_id]
@@ -105,25 +106,25 @@ async def async_setup_entry(
         async_dispatcher_connect(hass, EVENT_DISCOVERED, event_create_entity)
     )
     # Adding extra service calls here
-    # platform.async_register_entity_service(
-    #     SERVICE_SET_SLEEP_TIMER,
-    #     {vol.Required(ATTR_SLEEP_TIME): cv.time_period},
-    #     "async_set_sleep_timer",
-    # )
+    platform.async_register_entity_service(
+        SERVICE_SET_SLEEP_TIMER,
+        {vol.Required(ATTR_SLEEP_TIME): cv.time_period},
+        "async_set_sleep_timer",
+    )
 
-    # platform.async_register_entity_service(
-    #     SERVICE_CLEAR_SLEEP_TIMER, {}, "async_set_sleep_timer"
-    # )
+    platform.async_register_entity_service(
+        SERVICE_CLEAR_SLEEP_TIMER, {}, "async_clear_sleep_timer"
+    )
 
-    # platform.async_register_entity_service(
-    #     SERVICE_SNOOZE,
-    #     {
-    #         vol.Required(ATTR_SNOOZE_TIME): vol.All(
-    #             vol.Coerce(int), vol.Range(min=1, max=86399)
-    #         )
-    #     },
-    #     "async_snooze",
-    # )
+    platform.async_register_entity_service(
+        SERVICE_SNOOZE,
+        {
+            vol.Required(ATTR_SNOOZE_TIME): vol.All(
+                vol.Coerce(int), vol.Range(min=1, max=86399)
+            )
+        },
+        "async_snooze",
+    )
 
 
 class SonosMediaPlayerEntity(MediaPlayerEntity):
@@ -437,19 +438,20 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
         return None
 
     # Addition services to call
-    async def async_set_sleep_timer(self, sleep_time: int = -1) -> None:
-        """Set the player to sleep after sleep_time seconds"""
-        if sleep_time == -1:
-            await self._conn.send_command("sleep")
-        else:
-            await self._conn.send_command(
-                "sleep", seconds_to_time_string(float(sleep_time))
-            )
+    async def async_clear_sleep_timer(self) -> None:
+        """Clear current sleep timer"""
+        await self._conn.send_command("sleep")
 
-    async def async_snooze(self, snooze_time: int) -> None:
+    async def async_set_sleep_timer(self, sleep_time: dt.timedelta) -> None:
+        """Set the player to sleep after sleep_time seconds"""
+        await self._conn.send_command(
+            "sleep", seconds_to_time_string(float(sleep_time.seconds))
+        )
+
+    async def async_snooze(self, snooze_time: dt.timedelta) -> None:
         """Snooze alarm from x seconds"""
         await self._conn.send_command(
-            "snooze", seconds_to_time_string(float(snooze_time))
+            "snooze", seconds_to_time_string(float(snooze_time.seconds))
         )
 
 
