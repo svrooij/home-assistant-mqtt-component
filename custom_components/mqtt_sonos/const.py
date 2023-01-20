@@ -50,6 +50,8 @@ ATTR_TRACK_ARTIST = "artist"
 ATTR_TRACK_DURATION = "duration"
 ATTR_TRACK_URI = "trackUri"
 
+EVENT_DISCOVERED = DOMAIN + ".discovered"
+
 REPEAT_OFF = "Off"
 REPEAT_ALL = "RepeatAll"
 REPEAT_ONE = "RepeatOne"

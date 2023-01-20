@@ -2,12 +2,15 @@
 from __future__ import annotations
 
 import json
+import logging
+
 from typing import Any
 
 from homeassistant.components import mqtt
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
+import homeassistant.helpers.device_registry as dr
 
 from .const import (
     ATTR_AVAILABILITY_TOPIC,
@@ -26,6 +29,8 @@ from .const import (
     SOURCE_QUEUE,
     SOURCE_TV,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class MqttMediaConnection:
@@ -52,9 +57,13 @@ class MqttMediaConnection:
             self._device_info = DeviceInfo(
                 identifiers={(DOMAIN, self.identifier)},
                 name=self.name,
-                model=device[ATTR_DEVICE_MODEL],
+                model=device[ATTR_DEVICE_MODEL].replace("Sonos ", ""),
                 manufacturer=device[ATTR_DEVICE_MANUFACTURER],
                 sw_version=device[ATTR_DEVICE_SW_VERSION],
+                connections={
+                    # (dr.CONNECTION_NETWORK_MAC, mac),
+                    (dr.CONNECTION_UPNP, f"uuid:{self.identifier}"),
+                },
             )
         else:
             self.identifier = data[ATTR_UNIQUE_ID]
@@ -81,5 +90,6 @@ class MqttMediaConnection:
 
     async def send_command(self, command: str, value: Any | None = None) -> None:
         """Send a command, and optional payload to the mqtt server."""
+        _LOGGER.debug("Sending command %s to %s", command, self.command_topic)
         payload = json.dumps({"command": command, "input": value})
         await mqtt.async_publish(self.hass, self.command_topic, payload, 0)

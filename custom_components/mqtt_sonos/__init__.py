@@ -7,6 +7,7 @@ import asyncio
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceEntry
 
 from .const import DOMAIN
 from .sonos_manager import SonosManager
@@ -23,16 +24,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data.setdefault(DOMAIN, {})
     manager = SonosManager(entry, hass)
-    # We start discovery here so it's ready when the components are added.
-    await manager.async_start_discovery()
+
     # The initiated manager is added to hass, to be used in the actual entities
     hass.data[DOMAIN][entry.entry_id] = manager
 
-    # Wait until discovery completed, please help with this...
-    await asyncio.sleep(1)
-
     # Call forward entry for home assistant to try to initialize the speakers.
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    # We start discovery here so it's ready when the components are added.
+    await manager.async_start_discovery()
 
     return True
 
@@ -46,3 +46,10 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok
+
+
+async def async_remove_config_entry_device(
+    hass: HomeAssistant, config_entry: ConfigEntry, device_entry: DeviceEntry
+) -> bool:
+    """Remove a config entry from a device."""
+    return True

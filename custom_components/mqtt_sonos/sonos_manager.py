@@ -10,8 +10,9 @@ from homeassistant.components.mqtt.models import ReceiveMessage
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import Platform
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 
-from .const import ATTR_UNIQUE_ID, DISCOVERY_PAYLOAD
+from .const import ATTR_UNIQUE_ID, DISCOVERY_PAYLOAD, EVENT_DISCOVERED
 from .mqtt_media_connection import MqttMediaConnection
 
 PLATFORMS: list[Platform] = [Platform.MEDIA_PLAYER]  # Platform.SWITCH
@@ -59,10 +60,14 @@ class SonosManager:
                 self.connections[uuid] = MqttMediaConnection(
                     self.hass, self._config_entry, data
                 )
-
+                # Not sure if this is needed or what this does
+                # async_dispatcher_send(self.hass, EVENT_DISCOVERED, self.connections[uuid])
             else:
                 self.connections[uuid] = MqttMediaConnection(
                     self.hass, self._config_entry, data
+                )
+                async_dispatcher_send(
+                    self.hass, EVENT_DISCOVERED, self.connections[uuid]
                 )
 
         await mqtt.async_subscribe(self.hass, DISCOVERY_TOPIC, discovery_received)

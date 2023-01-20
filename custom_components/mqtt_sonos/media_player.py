@@ -24,7 +24,10 @@ from homeassistant.components.media_player import (
 )
 from homeassistant.components.mqtt.models import ReceiveMessage
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant, callback  # , ServiceCall
+
+# from homeassistant.helpers import config_validation as cv, entity_platform, service
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
@@ -47,6 +50,7 @@ from .const import (
     ATTR_VOLUME,
     DEFAULT_SPEAKER_FEATURES,
     DOMAIN,
+    EVENT_DISCOVERED,
     MQTT_PAYLOAD,
     REPEAT_ALL,
     REPEAT_OFF,
@@ -63,6 +67,12 @@ _LOGGER = logging.getLogger(__name__)
 
 BUILDIN_NOTIFICATION = "sonos2mqtt://bell"
 
+ATTR_SLEEP_TIME = "sleep_time"
+ATTR_SNOOZE_TIME = "snooze_time"
+SERVICE_CLEAR_SLEEP_TIMER = "clear_sleep_timer"
+SERVICE_SET_SLEEP_TIMER = "set_sleep_timer"
+SERVICE_SNOOZE = "snooze"
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -71,16 +81,49 @@ async def async_setup_entry(
 ) -> None:
     """Configure all found entities as media_player."""
 
+    # platform = entity_platform.async_get_current_platform()
+
     _LOGGER.debug("async_setup_entry called")
-    manager: SonosManager = hass.data[DOMAIN][config_entry.entry_id]
+    # manager: SonosManager = hass.data[DOMAIN][config_entry.entry_id]
 
-    connections = manager.get_connections()
-    entities = []
-    for _, conn in connections.items():
-        entities.append(SonosMediaPlayerEntity(conn, hass))
+    # # Creating media players when home assistant is loaded
+    # connections = manager.get_connections()
+    # entities = []
+    # for _, conn in connections.items():
+    #     entities.append(SonosMediaPlayerEntity(conn, hass))
 
-    _LOGGER.debug("Found %s speakers", entities.count)
-    async_add_entries(entities, True)
+    # async_add_entries(entities, False)
+
+    # Register for later updates
+    @callback
+    def event_create_entity(connection: MqttMediaConnection) -> None:
+        """Add entities once they are discovered"""
+        _LOGGER.debug("Adding MediaPlayer with name %s", connection.name)
+        async_add_entries([SonosMediaPlayerEntity(connection, hass)], False)
+
+    config_entry.async_on_unload(
+        async_dispatcher_connect(hass, EVENT_DISCOVERED, event_create_entity)
+    )
+    # Adding extra service calls here
+    # platform.async_register_entity_service(
+    #     SERVICE_SET_SLEEP_TIMER,
+    #     {vol.Required(ATTR_SLEEP_TIME): cv.time_period},
+    #     "async_set_sleep_timer",
+    # )
+
+    # platform.async_register_entity_service(
+    #     SERVICE_CLEAR_SLEEP_TIMER, {}, "async_set_sleep_timer"
+    # )
+
+    # platform.async_register_entity_service(
+    #     SERVICE_SNOOZE,
+    #     {
+    #         vol.Required(ATTR_SNOOZE_TIME): vol.All(
+    #             vol.Coerce(int), vol.Range(min=1, max=86399)
+    #         )
+    #     },
+    #     "async_snooze",
+    # )
 
 
 class SonosMediaPlayerEntity(MediaPlayerEntity):
@@ -132,7 +175,7 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
     def _handle_device_update(self, data: MQTT_PAYLOAD) -> None:
         """Update data from mqtt message."""
 
-        _LOGGER.debug("Got update from mqtt %s %s", self._attr_unique_id, data)
+        # _LOGGER.debug("Got update from mqtt %s %s", self._attr_unique_id, data)
 
         self._attr_available = True
         state = data[ATTR_TRANSPORTSTATE]
@@ -157,6 +200,9 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
                 self._attr_media_image_remotely_accessible = image_url.startswith(
                     "https://"
                 )
+            else:
+                self._attr_media_image_url = None
+
             if ATTR_TRACK_ARTIST in track:
                 self._attr_media_artist = track[ATTR_TRACK_ARTIST]
                 self._attr_media_album_artist = track[ATTR_TRACK_ARTIST]
@@ -348,13 +394,18 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
                     {
                         "trackUri": media_uri,
                         "timeout": 30,
-                        "volume": 20,
+                        "volume": 25,
                         "delayMs": 600,
                     },
                 )
                 return
 
             if media_id.startswith("media-source://radio_browser/"):
+                _LOGGER.debug(
+                    "Try play from radio browser media id: %s url: %s",
+                    media_id,
+                    info.url,
+                )
                 # Don't know how to play....
                 await self._conn.send_command("setavtransporturi", info.url)
                 # await self._conn.send_command(
@@ -384,6 +435,22 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
             'MQTT media player does not support a media type of "%s"', media_type
         )
         return None
+
+    # Addition services to call
+    async def async_set_sleep_timer(self, sleep_time: int = -1) -> None:
+        """Set the player to sleep after sleep_time seconds"""
+        if sleep_time == -1:
+            await self._conn.send_command("sleep")
+        else:
+            await self._conn.send_command(
+                "sleep", seconds_to_time_string(float(sleep_time))
+            )
+
+    async def async_snooze(self, snooze_time: int) -> None:
+        """Snooze alarm from x seconds"""
+        await self._conn.send_command(
+            "snooze", seconds_to_time_string(float(snooze_time))
+        )
 
 
 def time_string_to_seconds(time_string: str | None) -> int | None:
