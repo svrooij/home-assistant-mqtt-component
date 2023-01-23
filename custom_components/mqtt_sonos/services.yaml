@@ -6,7 +6,7 @@ set_sleep_timer:
       integration: mqtt_sonos
     entity:
       integration: mqtt_sonos
-      platform: media_player
+      domain: media_player
   fields:
     sleep_time:
       name: Sleep Time
@@ -26,7 +26,7 @@ clear_sleep_timer:
       integration: mqtt_sonos
     entity:
       integration: mqtt_sonos
-      platform: media_player
+      domain: media_player
 
 snooze:
   name: Snooze alarm
@@ -36,7 +36,7 @@ snooze:
       integration: mqtt_sonos
     entity:
       integration: mqtt_sonos
-      platform: media_player
+      domain: media_player
   fields:
     snooze_time:
       name: Snooze time
