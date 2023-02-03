@@ -49,7 +49,7 @@ from .const import (
     ATTR_UPNP_CLASS,
     ATTR_VOLUME,
     DEFAULT_SPEAKER_FEATURES,
-    DOMAIN,
+    # DOMAIN,
     EVENT_DISCOVERED,
     MQTT_PAYLOAD,
     REPEAT_ALL,
@@ -108,7 +108,7 @@ async def async_setup_entry(
     # Adding extra service calls here
     platform.async_register_entity_service(
         SERVICE_SET_SLEEP_TIMER,
-        {vol.Required(ATTR_SLEEP_TIME): cv.time_period},
+        {vol.Required(ATTR_SLEEP_TIME): cv.time_period_dict},
         "async_set_sleep_timer",
     )
 
@@ -118,11 +118,7 @@ async def async_setup_entry(
 
     platform.async_register_entity_service(
         SERVICE_SNOOZE,
-        {
-            vol.Required(ATTR_SNOOZE_TIME): vol.All(
-                vol.Coerce(int), vol.Range(min=1, max=86399)
-            )
-        },
+        {vol.Required(ATTR_SNOOZE_TIME): cv.time_period_dict},
         "async_snooze",
     )
 
