@@ -18,35 +18,41 @@
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
 	// Customizations
-	"extensions": [
-		"ms-python.python",
-		"github.vscode-pull-request-github",
-		"ryanluker.vscode-coverage-gutters",
-		"ms-python.vscode-pylance"
-	],
-	"settings": {
-		"terminal.integrated.defaultProfile.linux": "bash",
-		"terminal.integrated.profiles.linux": {
-			"bash": {
-				"path": "bash",
-				"icon": "terminal-bash"
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"github.vscode-pull-request-github",
+				"ryanluker.vscode-coverage-gutters",
+				"ms-python.vscode-pylance"
+			],
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "bash",
+				"terminal.integrated.profiles.linux": {
+					"bash": {
+						"path": "bash",
+						"icon": "terminal-bash"
+					}
+				},
+				"files.eol": "\n",
+				"editor.tabSize": 4,
+				"python.pythonPath": "/usr/bin/python3",
+				"python.analysis.autoSearchPaths": false,
+				// This makes sure the home assistant types are loaded into the editor
+				"python.analysis.extraPaths": [
+					"/home/vscode/.local/lib/python3.10/site-packages/"
+				],
+				"python.linting.pylintEnabled": true,
+				"python.linting.enabled": true,
+				"python.formatting.provider": "black",
+				"editor.formatOnPaste": false,
+				"editor.formatOnSave": true,
+				"editor.formatOnType": true,
+				"files.trimTrailingWhitespace": true
 			}
-		},
-		"files.eol": "\n",
-		"editor.tabSize": 4,
-		"python.pythonPath": "/usr/bin/python3",
-		"python.analysis.autoSearchPaths": false,
-		// This makes sure the home assistant types are loaded into the editor
-		"python.analysis.extraPaths": [
-			"/home/vscode/.local/lib/python3.10/site-packages/"
-		],
-		"python.linting.pylintEnabled": true,
-		"python.linting.enabled": true,
-		"python.formatting.provider": "black",
-		"editor.formatOnPaste": false,
-		"editor.formatOnSave": true,
-		"editor.formatOnType": true,
-		"files.trimTrailingWhitespace": true
+		}
 	},
+	
+	
 	"appPort": 8123
 }
