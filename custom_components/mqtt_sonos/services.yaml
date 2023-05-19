@@ -41,3 +41,45 @@ snooze:
       required: true
       selector:
         duration:
+
+clear_snooze:
+  name: Cancel snoozed alarm
+  description: Cancel a previously snoozed alarm
+  target:
+    entity:
+      integration: mqtt_sonos
+      domain: media_player
+
+group_volume:
+  name: Set group volume
+  description: Change volume for all players in the group
+  target:
+    entity:
+      integration: mqtt_sonos
+      domain: media_player
+  fields:
+    volume_level:
+      name: Level
+      description: Volume level to set as float.
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 1
+          step: 0.01
+
+group_volume_up:
+  name: Turn up group volume
+  description: Turn a media player volume up.
+  target:
+    entity:
+      integration: mqtt_sonos
+      domain: media_player
+
+group_volume_down:
+  name: Turn down group volume
+  description: Turn a media player volume down.
+  target:
+    entity:
+      integration: mqtt_sonos
+      domain: media_player
