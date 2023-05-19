@@ -11,6 +11,7 @@ import voluptuous as vol
 from homeassistant.components import media_source, mqtt
 from homeassistant.components.media_player import (
     ATTR_MEDIA_ENQUEUE,
+    ATTR_MEDIA_VOLUME_LEVEL,
     BrowseError,
     BrowseMedia,
     MediaClass,
@@ -21,6 +22,7 @@ from homeassistant.components.media_player import (
     MediaType,
     RepeatMode,
     async_process_play_media_url,
+    _rename_keys,
 )
 from homeassistant.components.mqtt.models import ReceiveMessage
 from homeassistant.config_entries import ConfigEntry
@@ -73,6 +75,10 @@ ATTR_SNOOZE_TIME = "snooze_time"
 SERVICE_CLEAR_SLEEP_TIMER = "clear_sleep_timer"
 SERVICE_SET_SLEEP_TIMER = "set_sleep_timer"
 SERVICE_SNOOZE = "snooze"
+SERVICE_CLEAR_SNOOZE = "clear_snooze"
+SERVICE_GROUP_VOLUME = "group_volume"
+SERVICE_GROUP_VOLUME_DOWN = SERVICE_GROUP_VOLUME + "_down"
+SERVICE_GROUP_VOLUME_UP = SERVICE_GROUP_VOLUME + "_up"
 
 
 async def async_setup_entry(
@@ -120,6 +126,33 @@ async def async_setup_entry(
         SERVICE_SNOOZE,
         {vol.Required(ATTR_SNOOZE_TIME): cv.time_period_dict},
         "async_snooze",
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_CLEAR_SNOOZE, {}, "async_clear_snooze"
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_GROUP_VOLUME,
+        vol.All(
+            cv.make_entity_service_schema(
+                {vol.Required(ATTR_MEDIA_VOLUME_LEVEL): cv.small_float}
+            ),
+            _rename_keys(volume=ATTR_MEDIA_VOLUME_LEVEL),
+        ),
+        "async_set_group_volume",
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_GROUP_VOLUME_DOWN,
+        {},
+        "async_group_volume_down",
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_GROUP_VOLUME_UP,
+        {},
+        "async_group_volume_up",
     )
 
 
@@ -324,6 +357,23 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
             self._attr_is_volume_muted = False
         self.async_write_ha_state()
 
+    async def async_volume_up(self) -> None:
+        """Send volume up and unmute command to mqtt."""
+        await self._conn.send_command("volumeup", 1)
+        # Not sure about this, it will get updated by the event anyway
+        self._attr_volume_level = self._attr_volume_level + 0.01
+        if self._attr_is_volume_muted is True:
+            await self._conn.send_command("unmute")
+            self._attr_is_volume_muted = False
+        self.async_write_ha_state()
+
+    async def async_volume_down(self) -> None:
+        """Send volume down and unmute command to mqtt."""
+        await self._conn.send_command("volumedown", 1)
+        # Not sure about this, it will get updated by the event anyway
+        self._attr_volume_level = self._attr_volume_level - 0.01
+        self.async_write_ha_state()
+
     async def async_select_source(self, source: str) -> None:
         """Send new source to mqtt."""
         if source == SOURCE_LINEIN:
@@ -384,7 +434,6 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
             )
 
             if media_id.startswith("media-source://tts/") or announce is True:
-
                 media_uri = async_process_play_media_url(self.hass, info.url)
                 await self._conn.send_command(
                     "notify",
@@ -449,6 +498,22 @@ class SonosMediaPlayerEntity(MediaPlayerEntity):
         await self._conn.send_command(
             "snooze", seconds_to_time_string(float(snooze_time.seconds))
         )
+
+    async def async_clear_snooze(self) -> None:
+        """Cancel the snoozed alarm"""
+        await self._conn.send_command("snooze", "")
+
+    async def async_set_group_volume(self, volume: float) -> None:
+        """Send volume and unmute command to mqtt."""
+        await self._conn.send_command("groupvolume", volume * 100)
+
+    async def async_group_volume_up(self) -> None:
+        """Send group volume up command to mqtt."""
+        await self._conn.send_command("groupvolumeup", 1)
+
+    async def async_group_volume_down(self) -> None:
+        """Send volume down command to mqtt."""
+        await self._conn.send_command("groupvolumedown", 1)
 
 
 def time_string_to_seconds(time_string: str | None) -> int | None:
